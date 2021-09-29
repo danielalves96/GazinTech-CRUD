@@ -4,11 +4,10 @@ ENV NODE_ENV development
 WORKDIR /app
 
 COPY package.json .
-COPY yarn.lock .
-RUN yarn install
+RUN npm install
 
 COPY . .
 
 EXPOSE 3000
 
-CMD [ "yarn", "dev" ]
+CMD npm run dev

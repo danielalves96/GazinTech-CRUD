@@ -6,16 +6,13 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <Head>
-        <title>TypeScript starter for Next.js</title>
-        <meta
-          name="description"
-          content="TypeScript starter for Next.js that includes all you need to build amazing apps"
-        />
+        <title>TypeScript Next.js</title>
+        <meta name="description" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>Teste</h1>
+        <h1 className={styles.title}>Testes</h1>
       </main>
     </div>
   );
