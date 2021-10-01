@@ -42,6 +42,83 @@ export default function Home() {
         console.error('resposta de erro:', response);
       });
   }
+  
+  function createColumns(): (
+    | {
+        title: string;
+        dataIndex: string;
+        key: string;
+        render: (text: string) => JSX.Element;
+      }
+    | { title: string; dataIndex: string; key: string; render?: undefined }
+    | {
+        title: string;
+        key: string;
+        render: (record: User) => JSX.Element;
+        dataIndex?: undefined;
+      }
+  )[] {
+    return [
+      {
+        title: 'Nome',
+        dataIndex: 'nome',
+        key: 'nome',
+        render: (text: string) => <a>{text}</a>,
+      },
+      {
+        title: 'Sexo',
+        dataIndex: 'sexo',
+        key: 'sexo',
+      },
+      {
+        title: 'Idade',
+        dataIndex: 'idade',
+        key: 'idade',
+      },
+      {
+        title: 'Hobby',
+        dataIndex: 'hobby',
+        key: 'hobby',
+      },
+      {
+        title: 'Data de nascimento',
+        dataIndex: 'datanascimento',
+        key: 'datanascimento',
+        render: (record: string) => (
+          <Space size="middle">
+            <span>{new Date(record).toLocaleDateString('pt-BR')}</span>
+          </Space>
+        ),
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        render: (record: User) => (
+          <Space size="middle">
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                showDeleteConfirm(record);
+              }}
+            >
+              Deletar
+            </Button>
+
+            <Link
+              href={{
+                pathname: '/edit-developer',
+                query: { id: record.id },
+              }}
+            >
+              <a> {<EditOutlined />} Editar</a>
+            </Link>
+          </Space>
+        ),
+      },
+    ];
+  }
 
   function showDeleteConfirm(user: User) {
     confirm({
@@ -52,10 +129,15 @@ export default function Home() {
       okType: 'danger',
       cancelText: 'Não',
       onOk() {
-        gazinApi.delete(`/developers/${user.id}`).then((response) => {
-          getApiData();
-          successMessage('Desenvolvedor removido com sucesso!');
-        });
+        gazinApi
+          .delete(`/developers/${user.id}`)
+          .then((response) => {
+            getApiData();
+            successMessage('Desenvolvedor removido com sucesso!');
+          })
+          .catch((response) => {
+            errorMessage('Erro ao remover desenvolvedor, tente novamente');
+          });
       },
       onCancel() {},
     });
@@ -75,6 +157,7 @@ export default function Home() {
         getApiData();
       })
       .catch((response) => {
+        errorMessage('Erro ao adicionar desenvolvedor, tente novamente');
         console.error('resposta de erro:', response);
       });
   }
@@ -83,66 +166,7 @@ export default function Home() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [pagination, setPagination] = useState(true);
 
-  const columns = [
-    {
-      title: 'Nome',
-      dataIndex: 'nome',
-      key: 'nome',
-      render: (text: string) => <a>{text}</a>,
-    },
-    {
-      title: 'Sexo',
-      dataIndex: 'sexo',
-      key: 'sexo',
-    },
-    {
-      title: 'Idade',
-      dataIndex: 'idade',
-      key: 'idade',
-    },
-    {
-      title: 'Hobby',
-      dataIndex: 'hobby',
-      key: 'hobby',
-    },
-    {
-      title: 'Data de nascimento',
-      dataIndex: 'datanascimento',
-      key: 'datanascimento',
-      render: (record: string) => (
-        <Space size="middle">
-          <span>{new Date(record).toLocaleDateString('pt-BR')}</span>
-        </Space>
-      ),
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (record: User) => (
-        <Space size="middle">
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              showDeleteConfirm(record);
-            }}
-          >
-            Deletar
-          </Button>
-
-          <Link
-            href={{
-              pathname: '/edit-developer',
-              query: { id: record.id },
-            }}
-          >
-            <a> {<EditOutlined />} Editar</a>
-          </Link>
-        </Space>
-      ),
-    },
-  ];
+  const columns = createColumns();
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -163,6 +187,10 @@ export default function Home() {
 
   const successMessage = (info: string) => {
     message.success(info);
+  };
+
+  const errorMessage = (info: string) => {
+    message.error(info);
   };
 
   const changePagination = () => {

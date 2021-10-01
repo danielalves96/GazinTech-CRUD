@@ -62,11 +62,16 @@ export default function EditDeveloper() {
       })
       .catch((response) => {
         console.error('resposta de erro:', response);
+        errorMessage('Erro ao atualizar desenvolvedor, tente novamente.')
       });
   }
 
   const successMessage = (info: string) => {
     message.success(info);
+  };
+
+  const errorMessage = (info: string) => {
+    message.error(info);
   };
 
   const [form] = Form.useForm();

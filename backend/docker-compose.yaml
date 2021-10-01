@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: backend-gazin
+    image: backend
+    build:
+      context: './'
+      dockerfile: Dockerfile
+    command: npm run dev
+    volumes:
+      - .:/usr/app/
+      - /usr/app/node_modules
+    ports:
+      - 3333:3333
+    networks:
+      - backend
+
+networks:
+  backend:
+    name: gazin-crud-backend
+    driver: bridge
