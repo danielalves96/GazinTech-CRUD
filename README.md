@@ -15,11 +15,11 @@
 
 - Tendo optado por usar o banco de dados localmente , navegue atá o arquivo .env no diretório /backend e edite as seguintes credenciais com os valores abaixo:
 ```
-PG_HOST=kesavan.db.elephantsql.com
+PG_HOST=localhost
 PG_PORT=5432
-PG_USER=tybhiyfd
-PG_PASSWORD=8tCZnQyZ4LzebNePXrQU6tepL7zgWAxL
-PG_DB_NAME=tybhiyfd
+PG_USER=root
+PG_PASSWORD=root
+PG_DB_NAME=crud_gazin_database
 ```
 - Depois execute:
 `npm run migrate`
