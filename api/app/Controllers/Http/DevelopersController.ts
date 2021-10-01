@@ -16,7 +16,7 @@ export default class DevelopersController {
   }
 
   public async store({ request }: HttpContextContract) {
-    const data = request.only(['nome', 'sexo', 'idade', 'hobby', 'datanascimento'])
+    const data = request.only(['id', 'nome', 'sexo', 'idade', 'hobby', 'datanascimento'])
     const developer = await Developer.create(data)
     return developer
   }

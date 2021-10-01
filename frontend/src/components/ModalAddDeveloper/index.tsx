@@ -65,7 +65,7 @@ export function ModalAddDeveloper(props: any) {
               style={{
                 width: '100%',
               }}
-              placeholder="Selecione a data"
+              placeholder="Selecione ou digite a data"
               locale={locale}
             />
           </Form.Item>

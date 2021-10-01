@@ -1,84 +1,148 @@
-import styles from '@/styles/Home.module.css';
-import { UserAddOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import {
-  Form,
-  Button,
-  Modal,
-  PageHeader,
-  Table,
-  message,
-} from 'antd';
-import { useState } from 'react';
-
 import { ModalAddDeveloper } from '@/components/ModalAddDeveloper';
-import { columns } from '../components/TableColumns';
+import styles from '@/styles/Home.module.css';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  ExclamationCircleOutlined,
+  UserAddOutlined,
+} from '@ant-design/icons';
+import { Button, Form, message, Modal, PageHeader, Space, Table } from 'antd';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { gazinApi } from 'services/api';
+import { uuid } from 'uuidv4';
+import moment from 'moment';
 
 const { confirm } = Modal;
 
 export type User = {
-  id: number;
+  id: string;
   nome: string;
   sexo: string;
   idade: number;
-  hobby: string;
+  hobby: string | null;
   datanascimento: any;
 };
 
-export function showDeleteConfirm(user: User) {
-  confirm({
-    title: `Tem certeza que deseja deletar o usuário?`,
-    icon: <ExclamationCircleOutlined />,
-    content: `Usuário: ${user.nome}`,
-    okText: 'Sim',
-    okType: 'danger',
-    cancelText: 'Não',
-    onOk() {
-      console.log('OK');
-    },
-    onCancel() {
-      console.log('Cancel');
-    },
-  });
-}
-
-const data = [
-  {
-    id: 4,
-    nome: 'Itamar Luiz',
-    sexo: 'Masculino',
-    idade: 49,
-    hobby: 'Programar diariamente para obter cada vez mais conhecimento.',
-    datanascimento: '1973-08-23T03:00:00.000Z',
-  },
-  {
-    id: 3,
-    nome: 'Marcia Regina Batista Alves',
-    sexo: 'Feminino',
-    idade: 47,
-    hobby: 'Programar diariamente para obter cada vez mais conhecimento.',
-    datanascimento: '1975-06-21T03:00:00.000Z',
-  },
-  {
-    id: 2,
-    nome: 'Paola Tavares de Oliveira',
-    sexo: 'Feminino',
-    idade: 25,
-    hobby: 'Programar diariamente para obter cada vez mais conhecimento.',
-    datanascimento: '1996-06-30T03:00:00.000Z',
-  },
-  {
-    id: 1,
-    nome: 'Daniel Alves',
-    sexo: 'Masculino',
-    idade: 25,
-    hobby: 'Programar diariamente para obter cada vez mais conhecimento.',
-    datanascimento: '1996-01-05T02:00:00.000Z',
-  },
-];
-
 export default function Home() {
+  const [data, setData] = useState();
+
+  useEffect(() => {
+    getApiData();
+  }, []);
+
+  function getApiData() {
+    gazinApi
+      .get('/developers')
+      .then((response) => {
+        console.log(response.data);
+        setData(response.data);
+      })
+      .catch((response) => {
+        console.error('resposta de erro:', response);
+      });
+  }
+
+  function showDeleteConfirm(user: User) {
+    confirm({
+      title: `Tem certeza que deseja deletar o usuário?`,
+      icon: <ExclamationCircleOutlined />,
+      content: `Usuário: ${user.nome}`,
+      okText: 'Sim',
+      okType: 'danger',
+      cancelText: 'Não',
+      onOk() {
+        gazinApi.delete(`/developers/${user.id}`).then((response) => {
+          getApiData();
+          successMessage('Desenvolvedor removido com sucesso!');
+        });
+      },
+      onCancel() {},
+    });
+  }
+
+  function addDeveloper(values: User) {
+    const years = moment().diff(Date.parse(values.datanascimento), 'years');
+    const newData = { ...values, id: uuid(), idade: years };
+    console.log(newData);
+    gazinApi
+      .post(`/developers/`, newData)
+      .then((response) => {
+        console.log('resposta de acerto:', response.data);
+        closeModal();
+        successMessage('Desenvolvedor adicionado com sucesso!');
+        form.resetFields();
+        getApiData();
+      })
+      .catch((response) => {
+        console.error('resposta de erro:', response);
+      });
+  }
+
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [pagination, setPagination] = useState(true);
+
+  const columns = [
+    {
+      title: 'Nome',
+      dataIndex: 'nome',
+      key: 'nome',
+      render: (text: string) => <a>{text}</a>,
+    },
+    {
+      title: 'Sexo',
+      dataIndex: 'sexo',
+      key: 'sexo',
+    },
+    {
+      title: 'Idade',
+      dataIndex: 'idade',
+      key: 'idade',
+    },
+    {
+      title: 'Hobby',
+      dataIndex: 'hobby',
+      key: 'hobby',
+    },
+    {
+      title: 'Data de nascimento',
+      dataIndex: 'datanascimento',
+      key: 'datanascimento',
+      render: (record: string) => (
+        <Space size="middle">
+          <span>{new Date(record).toLocaleDateString('pt-BR')}</span>
+        </Space>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (record: User) => (
+        <Space size="middle">
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              showDeleteConfirm(record);
+            }}
+          >
+            Deletar
+          </Button>
+
+          <Link
+            href={{
+              pathname: '/edit-developer',
+              query: { id: record.id },
+            }}
+          >
+            <a> {<EditOutlined />} Editar</a>
+          </Link>
+        </Space>
+      ),
+    },
+  ];
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -90,17 +154,19 @@ export default function Home() {
 
   const onFinish = (values: any) => {
     console.log('Success:', values);
-    closeModal();
-    successMessage();
-    form.resetFields();
+    addDeveloper(values);
   };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
   };
 
-  const successMessage = () => {
-    message.success('Desenvolvedor adicionado com sucesso!');
+  const successMessage = (info: string) => {
+    message.success(info);
+  };
+
+  const changePagination = () => {
+    setPagination(!pagination);
   };
 
   return (
@@ -115,6 +181,16 @@ export default function Home() {
         />
       </header>
 
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: 60,
+        }}
+      >
+        <h1>Listagem de desenvolvedores</h1>
+      </div>
+
       <div className={styles.main}>
         <div
           style={{
@@ -127,9 +203,26 @@ export default function Home() {
           <Button type="primary" icon={<UserAddOutlined />} onClick={showModal}>
             Adicionar
           </Button>
+          &nbsp;&nbsp;&nbsp;
+          {pagination && (
+            <Button type="primary" danger onClick={changePagination}>
+              Mostrar sem paginação
+            </Button>
+          )}
+          {!pagination && (
+            <Button type="primary" onClick={changePagination}>
+              Mostrar com paginação
+            </Button>
+          )}
         </div>
         <div>
-          <Table columns={columns} dataSource={data} rowKey="id" />
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            // @ts-expect-error
+            pagination={pagination}
+          />
         </div>
       </div>
       <ModalAddDeveloper
